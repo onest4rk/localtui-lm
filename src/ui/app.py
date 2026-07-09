@@ -1,7 +1,9 @@
 ﻿from __future__ import annotations
 
 import asyncio
+import itertools
 import threading
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -189,6 +191,7 @@ class LocalLMApp(App):
         self.session = Session()
         self.store = SessionStore(config.storage.save_dir)
         self._streaming = False
+        self._spinner_active = False
         self._current_preset = config.prompt.default_preset
 
     def compose(self) -> ComposeResult:
@@ -257,17 +260,34 @@ class LocalLMApp(App):
         info_panel = self.query_one("#model-info", ModelInfoPanel)
         status_bar = self._status()
 
-        status_bar.status = "loading..."
+        status_bar.status = "loading"
         status_bar.model_name = Path(self.config.model.path).name
+        info_panel.model_path = self.config.model.path
+        info_panel.loaded = False
+
+        self._spinner_active = True
+        self._animate_spinner(info_panel)
 
         def load_thread():
             try:
                 self.engine.load()
+                self._spinner_active = False
                 self.call_from_thread(self._on_model_loaded)
             except Exception as e:
+                self._spinner_active = False
                 self.call_from_thread(self._on_model_error, str(e))
 
         thread = threading.Thread(target=load_thread, daemon=True)
+        thread.start()
+
+    def _animate_spinner(self, panel: ModelInfoPanel) -> None:
+        frames = itertools.cycle([".  ", ".. ", "...", " ..", "  .", "   "])
+        def animate():
+            while self._spinner_active:
+                panel.loading_progress = next(frames)
+                self.call_later(panel.refresh)
+                time.sleep(0.3)
+        thread = threading.Thread(target=animate, daemon=True)
         thread.start()
 
     def _on_model_loaded(self) -> None:

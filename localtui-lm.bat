@@ -1,3 +1,4 @@
 @echo off
+set CMAKE_ARGS=-DLLAMA_AVX2=OFF;-DLLAMA_AVX=OFF;-DLLAMA_AVX512=OFF;-DLLAMA_FMA=OFF
 set PYTHONPATH=%~dp0src
-python -m app.app %*
+python run.py

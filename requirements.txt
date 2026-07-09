@@ -1,4 +1,4 @@
 textual>=1.0.0
-llama-cpp-python>=0.2.0  # On Windows, use: pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+llama-cpp-python==0.2.90
 tomli-w>=1.0.0
 rich>=13.0.0

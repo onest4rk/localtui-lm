@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import itertools
+import time
+
 from textual.widgets import Static
 from textual.reactive import reactive
 from rich.text import Text
@@ -22,17 +25,23 @@ class StatusBar(Static):
         grid.add_column(ratio=1)
         grid.add_column(ratio=1)
 
-        model_info = f"[bold]Model:[/] {self.model_name or 'N/A'}"
+        dot = {"loading": "[yellow]●[/]", "ready": "[green]●[/]", "error": "[red]●[/]", "generating": "[cyan]●[/]", "idle": "[dim]●[/]"}
+        dot_char = dot.get(self.status, "[dim]●[/]")
+
+        model_info = f"{dot_char} [bold]Model:[/] {self.model_name or 'N/A'}"
         status_info = f"[bold]Status:[/] {self.status}"
         speed_info = f"[bold]Speed:[/] {self.tokens_per_second:.1f} tok/s" if self.tokens_per_second > 0 else "[bold]Speed:[/] --"
         tokens_info = f"[bold]Tokens:[/] {self.tokens_generated}"
         ctx_pct = (self.context_used / self.context_max * 100) if self.context_max > 0 else 0
         ctx_info = f"[bold]Context:[/] {self.context_used}/{self.context_max} ({ctx_pct:.0f}%)"
 
+        border = {"loading": "yellow", "ready": "green", "error": "red", "generating": "cyan", "idle": "blue"}
+        border_style = border.get(self.status, "blue")
+
         grid.add_row(model_info, status_info, speed_info)
         grid.add_row(tokens_info, ctx_info, "")
 
-        return Panel(grid, title="System Status", border_style="blue")
+        return Panel(grid, title="System Status", border_style=border_style)
 
 
 class ChatMessage(Static):
@@ -44,7 +53,8 @@ class ChatMessage(Static):
     def render(self) -> Panel:
         label = "You" if self.role == "user" else "Assistant"
         border_style = "green" if self.role == "user" else "blue"
-        return Panel(self.content, title=label, border_style=border_style)
+        icon = "🧑" if self.role == "user" else "🤖"
+        return Panel(f"{icon} {self.content}", title=label, border_style=border_style)
 
 
 class SessionList(Static):
@@ -67,15 +77,21 @@ class ModelInfoPanel(Static):
     loaded = reactive(False)
     load_time = reactive(0.0)
     model_path = reactive("")
+    loading_progress = reactive("")
 
     def render(self) -> Panel:
         if not self.loaded:
-            return Panel("Model not loaded", title="Model Info", border_style="yellow")
+            dots = self.loading_progress or "..."
+            return Panel(
+                f"[yellow]Loading model{dots}[/]\n\nExpected at:\n{self.model_path}",
+                title="Model Info",
+                border_style="yellow",
+            )
 
         lines = [
             f"Path: {self.model_path}",
             f"Load time: {self.load_time:.1f}s",
-            "Status: Loaded",
+            "Status: [green]Loaded[/]",
         ]
         return Panel("\n".join(lines), title="Model Info", border_style="green")
 
