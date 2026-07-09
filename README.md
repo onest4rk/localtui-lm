@@ -47,12 +47,21 @@ python -m venv venv
 source venv/bin/activate    # Linux/macOS
 # venv\Scripts\activate     # Windows
 
-# Install the package
-pip install -e .
-
-# Or install dependencies directly
+# Install dependencies
+# On Linux/macOS:
 pip install -r requirements.txt
+
+# On Windows (llama-cpp-python needs a pre-built wheel):
+pip install -r requirements.txt
+pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+
+# Install the package in editable mode
+pip install -e .
 ```
+
+> **Windows note:** `llama-cpp-python` must be installed from a pre-built wheel.
+> The extra index at `abetlen.github.io` provides wheels for all Python versions.
+> Building from source requires Microsoft C++ Build Tools which is not recommended.
 
 ### Quick setup (Linux/macOS)
 
@@ -95,7 +104,7 @@ path = "/path/to/your/model.gguf"
 localtui-lm
 
 # Or directly
-python -m src.app.app
+python -m app.app
 ```
 
 ### Layout
@@ -255,7 +264,11 @@ Set `n_threads` to your physical CPU core count (not logical threads) for best p
 
 ### "llama-cpp-python is not installed"
 - Run `pip install llama-cpp-python`
-- On Windows, pre-built wheels are available on PyPI
+- On Windows, use the pre-built wheel index:
+  ```
+  pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu
+  ```
+- Building from source requires Microsoft C++ Build Tools — use the wheel instead
 
 ### Slow generation
 - Reduce `context_size` and `max_tokens` in config
