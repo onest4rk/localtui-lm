@@ -7,3 +7,6 @@ venv/
 data/models/*.gguf
 data/sessions/
 data/exports/
+*.egg-info/
+build/
+dist/

@@ -1,2 +1,0 @@
-[console_scripts]
-localtui-lm = src.app.app:main
