@@ -48,12 +48,7 @@ read -p "Download the default model now? [y/N] " -n 1 -r
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     python scripts/download_model.py
-    # Move to default location
     mkdir -p data/models
-    if [ -f "data/models/qwen2.5-1.5b-instruct-q4_k_m.gguf" ]; then
-        echo "Setting up default model symlink..."
-        ln -sf "qwen2.5-1.5b-instruct-q4_k_m.gguf" "data/models/model.gguf"
-    fi
 fi
 
 echo ""

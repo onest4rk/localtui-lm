@@ -73,7 +73,7 @@ def main():
     else:
         script_dir = Path(__file__).resolve().parent
         project_dir = script_dir.parent
-        output_path = project_dir / "data" / "models" / args.file
+        output_path = project_dir / "data" / "models" / "model.gguf"
 
     repo = args.model.strip("/")
     file_url = f"{HF_BASE}/{repo}/resolve/main/{args.file}"
@@ -86,11 +86,9 @@ def main():
     download_file(file_url, output_path, desc=f"{repo}/{args.file}")
 
     print()
-    print("Model downloaded. To use it, set in your config.toml:")
-    print(f'  [model]')
-    print(f'  path = "{output_path}"')
-    print()
-    print("Or place the file at the default location: data/models/model.gguf")
+    print(f"Model downloaded to: {output_path}")
+    print("The app will find it automatically at the default location.")
+    print("You can now run: python run.py")
 
 
 if __name__ == "__main__":
