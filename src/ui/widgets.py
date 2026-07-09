@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-import itertools
-import time
-
 from textual.widgets import Static
 from textual.reactive import reactive
 from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
-from rich.layout import Layout
 
 
 class StatusBar(Static):
@@ -25,23 +21,20 @@ class StatusBar(Static):
         grid.add_column(ratio=1)
         grid.add_column(ratio=1)
 
-        dot = {"loading": "[yellow]●[/]", "ready": "[green]●[/]", "error": "[red]●[/]", "generating": "[cyan]●[/]", "idle": "[dim]●[/]"}
-        dot_char = dot.get(self.status, "[dim]●[/]")
+        dot = {"loading": "[#ffa500]●[/]", "ready": "[#00ff88]●[/]", "error": "[#ff4444]●[/]", "generating": "[#44ddff]●[/]", "idle": "[#666666]●[/]"}
+        dot_char = dot.get(self.status, "[#666666]●[/]")
 
-        model_info = f"{dot_char} [bold]Model:[/] {self.model_name or 'N/A'}"
-        status_info = f"[bold]Status:[/] {self.status}"
-        speed_info = f"[bold]Speed:[/] {self.tokens_per_second:.1f} tok/s" if self.tokens_per_second > 0 else "[bold]Speed:[/] --"
-        tokens_info = f"[bold]Tokens:[/] {self.tokens_generated}"
+        model_info = f"{dot_char} {self.model_name or 'N/A'}"
+        status_info = f"{self.status}"
+        speed_info = f"{self.tokens_per_second:.1f} tok/s" if self.tokens_per_second > 0 else "-- tok/s"
+        tokens_info = f"tokens: {self.tokens_generated}"
         ctx_pct = (self.context_used / self.context_max * 100) if self.context_max > 0 else 0
-        ctx_info = f"[bold]Context:[/] {self.context_used}/{self.context_max} ({ctx_pct:.0f}%)"
-
-        border = {"loading": "yellow", "ready": "green", "error": "red", "generating": "cyan", "idle": "blue"}
-        border_style = border.get(self.status, "blue")
+        ctx_info = f"ctx: {self.context_used}/{self.context_max} ({ctx_pct:.0f}%)"
 
         grid.add_row(model_info, status_info, speed_info)
         grid.add_row(tokens_info, ctx_info, "")
 
-        return Panel(grid, title="System Status", border_style=border_style)
+        return Panel(grid, title="status", border_style="#444444")
 
 
 class ChatMessage(Static):
@@ -51,10 +44,9 @@ class ChatMessage(Static):
         self.content = content
 
     def render(self) -> Panel:
-        label = "You" if self.role == "user" else "Assistant"
-        border_style = "green" if self.role == "user" else "blue"
-        icon = "🧑" if self.role == "user" else "🤖"
-        return Panel(f"{icon} {self.content}", title=label, border_style=border_style)
+        label = "you" if self.role == "user" else "assistant"
+        border_style = "#446644" if self.role == "user" else "#444466"
+        return Panel(self.content, title=label, border_style=border_style)
 
 
 class SessionList(Static):
@@ -62,15 +54,15 @@ class SessionList(Static):
 
     def render(self) -> Panel:
         if not self.sessions:
-            return Panel("No saved sessions", title="Sessions", border_style="dim")
+            return Panel("no saved sessions", title="sessions", border_style="#333333")
 
         table = Table.grid(expand=True)
         for s in self.sessions:
             title = s.get("title", "Untitled")
             count = s.get("message_count", 0)
-            table.add_row(f"  {title} ({count} msgs)")
+            table.add_row(f"  {title} ({count})")
 
-        return Panel(table, title="Sessions", border_style="green")
+        return Panel(table, title="sessions", border_style="#444444")
 
 
 class ModelInfoPanel(Static):
@@ -83,17 +75,16 @@ class ModelInfoPanel(Static):
         if not self.loaded:
             dots = self.loading_progress or "..."
             return Panel(
-                f"[yellow]Loading model{dots}[/]\n\nExpected at:\n{self.model_path}",
-                title="Model Info",
-                border_style="yellow",
+                f"loading{dots}\n\n{self.model_path}",
+                title="model",
+                border_style="#666644",
             )
 
         lines = [
-            f"Path: {self.model_path}",
-            f"Load time: {self.load_time:.1f}s",
-            "Status: [green]Loaded[/]",
+            f"loaded in {self.load_time:.1f}s",
+            f"path: {self.model_path}",
         ]
-        return Panel("\n".join(lines), title="Model Info", border_style="green")
+        return Panel("\n".join(lines), title="model", border_style="#446644")
 
 
 class PresetSelector(Static):
@@ -102,4 +93,4 @@ class PresetSelector(Static):
 
     def render(self) -> Text:
         presets = ", ".join(self.available_presets) if self.available_presets else "general, coding, writing, tutor"
-        return Text(f"Preset: [bold]{self.current_preset}[/]  ({presets})")
+        return Text(f"preset: {self.current_preset}  ({presets})")
