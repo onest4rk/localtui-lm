@@ -100,10 +100,15 @@ path = "/path/to/your/model.gguf"
 ### Launch the TUI
 
 ```bash
-# Using the installed command
+# Using the launcher script (works everywhere)
+python run.py
+
+# If pip install -e . succeeded:
 localtui-lm
 
-# Or directly
+# Or directly with PYTHONPATH:
+set PYTHONPATH=src     # Windows
+# PYTHONPATH=src       # Linux/macOS
 python -m app.app
 ```
 
