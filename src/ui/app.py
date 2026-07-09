@@ -211,8 +211,31 @@ class LocalLMApp(App):
     def on_mount(self) -> None:
         self._update_presets()
         self._update_sessions()
+        self._show_welcome()
         self._load_model()
         self.query_one("#prompt-input", Input).focus()
+
+    def _show_welcome(self) -> None:
+        model_path = Path(self.config.model.path)
+        if model_path.exists():
+            welcome = Panel(
+                "Welcome to LocalTUI-LM!\n\n"
+                "Type a message to start chatting, or /help for commands.",
+                title="Welcome",
+                border_style="green",
+            )
+        else:
+            welcome = Panel(
+                "[bold yellow]No model found[/]\n\n"
+                f"Expected at: {self.config.model.path}\n\n"
+                "To download a default model:\n"
+                "  [bold]python scripts/download_model.py[/]\n\n"
+                "Or set a custom path in [bold]config.toml[/]\n\n"
+                "Type [bold]/help[/] for available commands.",
+                title="Welcome to LocalTUI-LM",
+                border_style="yellow",
+            )
+        self._chat_history().write(welcome)
 
     def _update_presets(self) -> None:
         presets = list_presets(self.config.prompt.custom_presets_file)
@@ -376,7 +399,10 @@ class LocalLMApp(App):
             return
 
         if not self.engine.is_loaded:
-            self._chat_history().write(Panel("Model is not loaded yet. Please wait.", border_style="red"))
+            msg = "Model is not loaded. Please download a GGUF model first:\n"
+            msg += "  python scripts/download_model.py\n"
+            msg += "Or update the model path in config.toml"
+            self._chat_history().write(Panel(msg, title="No Model Loaded", border_style="red"))
             return
 
         input_widget = self.query_one("#prompt-input", Input)
@@ -442,7 +468,7 @@ class LocalLMApp(App):
         for msg in self.session.messages[:-1]:
             self._chat_history().write(ChatMessage(msg.role, msg.content))
         self._chat_history().write(ChatMessage("user", self.session.messages[-1].content))
-        self._chat_history().write(ChatMessage("assistant", full_response + "â–Š"))
+        self._chat_history().write(ChatMessage("assistant", full_response + "~"))
 
     def _finish_stream(self, full_response: str) -> None:
         self._streaming = False
