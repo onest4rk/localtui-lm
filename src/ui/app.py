@@ -399,20 +399,6 @@ class LocalLMApp(App):
         if self._streaming:
             return
 
-        if not self.engine.is_loaded:
-            msg = (
-                "[bold yellow]Model not loaded[/]\n\n"
-                "The model file was not found at:\n"
-                f"  [bold]{self.config.model.path}[/]\n\n"
-                "To fix this:\n"
-                "  1. Run download script:\n"
-                "     [bold]python scripts/download_model.py[/]\n"
-                "  2. Or update the path in [bold]config.toml[/]\n"
-                "  3. Or type [bold]/download[/] for instructions"
-            )
-            self._chat_history().write(Panel(msg, title="No Model Loaded", border_style="red"))
-            return
-
         input_widget = self.query_one("#prompt-input", Input)
         user_text = input_widget.value.strip()
         if not user_text:
@@ -422,6 +408,19 @@ class LocalLMApp(App):
 
         if user_text.startswith("/"):
             self._handle_slash_command(user_text)
+            return
+
+        if not self.engine.is_loaded:
+            msg = (
+                "[bold yellow]Model not loaded[/]\n\n"
+                "The model file was not found at:\n"
+                f"  [bold]{self.config.model.path}[/]\n\n"
+                "To fix this:\n"
+                "  1. Run: [bold]python scripts/download_model.py[/]\n"
+                "  2. Or update the path in [bold]config.toml[/]\n"
+                "  3. Or type [bold]/download[/] for instructions"
+            )
+            self._chat_history().write(Panel(msg, title="No Model Loaded", border_style="red"))
             return
 
         self.session.add_message("user", user_text)
