@@ -1,0 +1,25 @@
+[model]
+path = "data/models/model.gguf"
+context_size = 2048
+max_tokens = 512
+temperature = 0.7
+top_p = 0.9
+repeat_penalty = 1.1
+n_gpu_layers = 0
+# n_threads = <auto>  # Uncomment to set CPU thread count
+verbose = false
+
+[ui]
+theme = "default"
+show_token_count = true
+show_speed = true
+markdown_render = true
+
+[storage]
+save_dir = "data/sessions"
+auto_save = true
+max_history = 100
+
+[prompt]
+default_preset = "general"
+# custom_presets_file = "presets.json"  # Uncomment to use custom presets
