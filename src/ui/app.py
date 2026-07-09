@@ -378,6 +378,7 @@ class LocalLMApp(App):
             "  /config      Show config summary\n"
             "  /presets     List presets\n"
             "  /preset <n>  Switch preset\n"
+            "  /download    Show download instructions\n"
             "  /export      Export to Markdown\n"
             "  /tokens      Show token stats",
             title="Help",
@@ -399,9 +400,16 @@ class LocalLMApp(App):
             return
 
         if not self.engine.is_loaded:
-            msg = "Model is not loaded. Please download a GGUF model first:\n"
-            msg += "  python scripts/download_model.py\n"
-            msg += "Or update the model path in config.toml"
+            msg = (
+                "[bold yellow]Model not loaded[/]\n\n"
+                "The model file was not found at:\n"
+                f"  [bold]{self.config.model.path}[/]\n\n"
+                "To fix this:\n"
+                "  1. Run download script:\n"
+                "     [bold]python scripts/download_model.py[/]\n"
+                "  2. Or update the path in [bold]config.toml[/]\n"
+                "  3. Or type [bold]/download[/] for instructions"
+            )
             self._chat_history().write(Panel(msg, title="No Model Loaded", border_style="red"))
             return
 
@@ -509,6 +517,8 @@ class LocalLMApp(App):
             self._list_presets()
         elif cmd == "preset" and len(parts) > 1:
             self._on_preset_selected(parts[1])
+        elif cmd == "download":
+            self._show_download_instructions()
         elif cmd == "export":
             self.action_export_md()
         elif cmd == "tokens":
@@ -540,6 +550,24 @@ class LocalLMApp(App):
         presets = list_presets(self.config.prompt.custom_presets_file)
         lines = [f"  {k} {'(current)' if k == self._current_preset else ''}" for k in presets]
         self._chat_history().write(Panel("\n".join(lines), title="Available Presets", border_style="blue"))
+
+    def _show_download_instructions(self) -> None:
+        msg = (
+            "[bold]Model Download Instructions[/]\n\n"
+            "Option 1 - Automatic (recommended):\n"
+            "  Exit this TUI and run:\n"
+            "  [bold]python scripts/download_model.py[/]\n\n"
+            "Option 2 - Manual:\n"
+            "  1. Go to huggingface.co/models?search=gguf\n"
+            "  2. Download a small GGUF file (Q4_K_M quantization)\n"
+            "  3. Place it at: [bold]data/models/model.gguf[/]\n\n"
+            "Option 3 - Custom path:\n"
+            "  Edit [bold]config.toml[/] and set:\n"
+            "  [bold]model.path = \"path/to/your/model.gguf\"[/]\n\n"
+            "Recommended model:\n"
+            "  Qwen2.5-1.5B-Instruct (Q4_K_M, ~1GB)"
+        )
+        self._chat_history().write(Panel(msg, title="Download Model", border_style="blue"))
 
     def on_unmount(self) -> None:
         if self.session.messages and self.config.storage.auto_save:
