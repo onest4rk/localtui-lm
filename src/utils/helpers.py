@@ -52,5 +52,5 @@ def format_context_usage(current: int, max: int) -> str:
     pct = (current / max) * 100 if max > 0 else 0
     bar_len = 10
     filled = int(bar_len * pct / 100)
-    bar = "█" * filled + "░" * (bar_len - filled)
+    bar = "#" * filled + "-" * (bar_len - filled)
     return f"[{bar}] {current}/{max} ({pct:.0f}%)"
