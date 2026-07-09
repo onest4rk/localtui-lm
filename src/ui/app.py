@@ -89,8 +89,10 @@ class LocalLMApp(App):
     #chat-column { width: 70%; height: 100%; }
     #sidebar { width: 30%; height: 100%; border-left: solid #333; }
     #chat-history { height: 1fr; border: solid #333; padding: 1; overflow-y: auto; background: #1a1a1a; }
+    #chat-history:focus { border: solid #555; }
     #input-area { height: auto; min-height: 3; max-height: 8; border-top: solid #333; padding: 0 1; }
     #prompt-input { width: 1fr; }
+    #prompt-input:focus { border: solid #666; }
     #input-buttons { width: auto; height: 3; }
     #sidebar StatusBar { height: auto; }
     #sidebar ModelInfoPanel { height: auto; }
@@ -116,6 +118,7 @@ class LocalLMApp(App):
         self.store = SessionStore(config.storage.save_dir)
         self._streaming = False
         self._spinner_active = False
+        self._spinner_frames = None
         self._current_preset = config.prompt.default_preset
 
     def compose(self) -> ComposeResult:
@@ -140,6 +143,9 @@ class LocalLMApp(App):
         self._update_sessions()
         self._show_welcome()
         self._load_model()
+        self.set_timer(0.05, self._focus_input)
+
+    def _focus_input(self) -> None:
         self.query_one("#prompt-input", Input).focus()
 
     def _show_welcome(self) -> None:
@@ -185,7 +191,8 @@ class LocalLMApp(App):
         info_panel.loaded = False
 
         self._spinner_active = True
-        self._animate_spinner(info_panel)
+        self._spinner_frames = itertools.cycle([".  ", ".. ", "...", " ..", "  .", "   "])
+        self.set_interval(0.3, self._tick_spinner)
 
         def load_thread():
             try:
@@ -198,14 +205,11 @@ class LocalLMApp(App):
 
         threading.Thread(target=load_thread, daemon=True).start()
 
-    def _animate_spinner(self, panel: ModelInfoPanel) -> None:
-        frames = itertools.cycle([".  ", ".. ", "...", " ..", "  .", "   "])
-        def animate():
-            while self._spinner_active:
-                panel.loading_progress = next(frames)
-                self.call_later(panel.refresh)
-                time.sleep(0.3)
-        threading.Thread(target=animate, daemon=True).start()
+    def _tick_spinner(self) -> None:
+        if not self._spinner_active:
+            return
+        panel = self.query_one("#model-info", ModelInfoPanel)
+        panel.loading_progress = next(self._spinner_frames)
 
     def _on_model_loaded(self) -> None:
         info_panel = self.query_one("#model-info", ModelInfoPanel)
