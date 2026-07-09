@@ -1,10 +1,10 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-from src.config.config import Config
-from src.ui.app import LocalLMApp
+from config.config import Config
+from ui.app import LocalLMApp
 
 
 def main():

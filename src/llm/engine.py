@@ -1,11 +1,11 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import sys
 import time
 from typing import Optional, Generator
 from pathlib import Path
 
-from src.config.config import Config
+from config.config import Config
 
 
 class LLMEngine:

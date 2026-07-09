@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 import threading
@@ -16,11 +16,11 @@ from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
 
-from src.config.config import Config
-from src.llm.engine import LLMEngine
-from src.storage.session import Session, SessionStore
-from src.prompts.presets import get_preset, list_presets
-from src.ui.widgets import StatusBar, ChatMessage, SessionList, ModelInfoPanel, PresetSelector
+from config.config import Config
+from llm.engine import LLMEngine
+from storage.session import Session, SessionStore
+from prompts.presets import get_preset, list_presets
+from ui.widgets import StatusBar, ChatMessage, SessionList, ModelInfoPanel, PresetSelector
 
 
 class PresetScreen(ModalScreen[str]):
@@ -442,7 +442,7 @@ class LocalLMApp(App):
         for msg in self.session.messages[:-1]:
             self._chat_history().write(ChatMessage(msg.role, msg.content))
         self._chat_history().write(ChatMessage("user", self.session.messages[-1].content))
-        self._chat_history().write(ChatMessage("assistant", full_response + "▊"))
+        self._chat_history().write(ChatMessage("assistant", full_response + "â–Š"))
 
     def _finish_stream(self, full_response: str) -> None:
         self._streaming = False
